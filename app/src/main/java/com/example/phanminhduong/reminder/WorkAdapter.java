@@ -59,9 +59,9 @@ public class WorkAdapter extends BaseAdapter {
             m = (MyHolder) v.getTag();
         }
         final Work p = workList.get(position);
-        m.checkBox.setChecked(p.getStatus());
+        m.checkBox.setChecked(p.isStatus());
 
-        m.textView.setText(p.getTitle());
+        m.textView.setText(p.getNote());
 
         return v;
     }

@@ -1,39 +1,44 @@
 package com.example.phanminhduong.reminder;
 
+import java.sql.Date;
 import java.sql.Time;
 
 public class Work {
-    private String title;
-    private Time time;
-    private boolean status;
+    private String note;
 
-    public Work(String title, Time time, boolean status) {
-        this.title = title;
-        this.time = time;
-        this.status = status;
+    public String getNote() {
+        return note;
     }
 
-    public String getTitle() {
-        return title;
+    public void setNote(String note) {
+        this.note = note;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public String getDate() {
+        return date;
     }
 
-    public Time getTime() {
-        return time;
+    public void setDate(String date) {
+        this.date = date;
     }
 
-    public void setTime(Time time) {
-        this.time = time;
-    }
-
-    public boolean getStatus() {
+    public boolean isStatus() {
         return status;
     }
 
     public void setStatus(boolean status) {
         this.status = status;
     }
+
+    public Work(String note, String date, boolean status) {
+
+        this.note = note;
+        this.date = date;
+        this.status = status;
+    }
+
+    private String date;
+    private boolean status;
+
+
 }
