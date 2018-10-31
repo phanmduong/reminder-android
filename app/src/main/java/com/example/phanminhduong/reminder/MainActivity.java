@@ -120,7 +120,14 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(@NotNull ApolloException e) {
-                Toast.makeText(MainActivity.this, "Đăng nhập thất bại!!!", Toast.LENGTH_LONG).show();
+                LoginManager.getInstance().logOut();
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "Đăng nhập thất bại!!!", Toast.LENGTH_LONG).show();
+                    }
+                });
+
                 pd.dismiss();
             }
         });
@@ -138,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startTodayActivity() {
         Intent intent = new Intent(this, TodayActivity.class);
+//        finish();
         startActivity(intent);
     }
 
