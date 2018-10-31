@@ -1,0 +1,5 @@
+mutation loginUser($fbID: String, $token: String!){
+  login(fb_id: $fbID, token: $token){
+    token
+  }
+}

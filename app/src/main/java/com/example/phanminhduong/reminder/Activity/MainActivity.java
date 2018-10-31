@@ -1,11 +1,21 @@
 package com.example.phanminhduong.reminder.Activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+<<<<<<< HEAD:app/src/main/java/com/example/phanminhduong/reminder/Activity/MainActivity.java
 import com.example.phanminhduong.reminder.R;
+=======
+import com.apollographql.apollo.ApolloCall;
+import com.apollographql.apollo.api.Response;
+import com.apollographql.apollo.exception.ApolloException;
+import com.example.phanminhduong.reminder.graphql.MyApolloClient;
+>>>>>>> bf237adc1193c2f13a4a2cb1850543c05d068258:app/src/main/java/com/example/phanminhduong/reminder/MainActivity.java
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -21,12 +31,15 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
     CallbackManager callbackManager;
     LoginButton loginButton;
+    ProgressDialog pd;
 
     GoogleSignInClient mGoogleSignInClient;
     int RC_SIGN_IN = 99;
@@ -36,39 +49,51 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        View layoutLogin = findViewById(R.id.layoutLogin);
+        layoutLogin.getBackground().setAlpha(150);
+
+        pd = new ProgressDialog(MainActivity.this);
+        pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        pd.setMessage("Đang đăng nhập....");
+        pd.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFD4D9D0")));
+
+        pd.setIndeterminate(false);
+
         signInFacebook();
         signInGoogle();
 
     }
 
     private void signInGoogle() {
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-        SignInButton signInButton = findViewById(R.id.sign_in_button);
-        signInButton.setSize(SignInButton.SIZE_STANDARD);
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-                startActivityForResult(signInIntent, RC_SIGN_IN);
-            }
-        });
+//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestEmail()
+//                .build();
+//        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+//        SignInButton signInButton = findViewById(R.id.sign_in_button);
+//        signInButton.setSize(SignInButton.SIZE_STANDARD);
+//        signInButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+////                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+////                startActivityForResult(signInIntent, RC_SIGN_IN);
+//                Toast.makeText(MainActivity.this, "Đăng nhập Google đang phát triển", Toast.LENGTH_LONG).show();
+//            }
+//        });
     }
 
     private void signInFacebook() {
         callbackManager = CallbackManager.Factory.create();
 
         loginButton = findViewById(R.id.login_button);
-        loginButton.setReadPermissions(Arrays.asList("public_profile"));
+        loginButton.setReadPermissions(Arrays.asList("public_profile", "email"));
         checkLoggedIn();
 
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                loginResult.getAccessToken();
-                startTodayActivity();
+
+                loginFBServer(loginResult.getAccessToken().getUserId(), loginResult.getAccessToken().getToken());
+
             }
 
             @Override
@@ -78,7 +103,27 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onError(FacebookException exception) {
-                // App code
+                Toast.makeText(MainActivity.this, "Đăng nhập Facebook thất bại!!!", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void loginFBServer(String fbID, String tokenFB) {
+        pd.show();
+        LoginUserMutation loginUserMutation = LoginUserMutation.builder().fbID(fbID).token(tokenFB).build();
+        MyApolloClient.getApolloClient().mutate(loginUserMutation).enqueue(new ApolloCall.Callback<LoginUserMutation.Data>() {
+            @Override
+            public void onResponse(@NotNull Response<LoginUserMutation.Data> response) {
+                Data.token = response.data().login().token();
+                Log.e("token", Data.token);
+                pd.dismiss();
+                startTodayActivity();
+            }
+
+            @Override
+            public void onFailure(@NotNull ApolloException e) {
+                Toast.makeText(MainActivity.this, "Đăng nhập thất bại!!!", Toast.LENGTH_LONG).show();
+                pd.dismiss();
             }
         });
     }
@@ -87,7 +132,11 @@ public class MainActivity extends AppCompatActivity {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
         if (isLoggedIn) {
+<<<<<<< HEAD:app/src/main/java/com/example/phanminhduong/reminder/Activity/MainActivity.java
             startTodayActivity();
+=======
+            loginFBServer(accessToken.getUserId(), accessToken.getToken());
+>>>>>>> bf237adc1193c2f13a4a2cb1850543c05d068258:app/src/main/java/com/example/phanminhduong/reminder/MainActivity.java
         } else {
             LoginManager.getInstance().logOut();
         }
