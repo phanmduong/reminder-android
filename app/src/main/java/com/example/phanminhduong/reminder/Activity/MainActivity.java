@@ -1,12 +1,11 @@
-package com.example.phanminhduong.reminder;
+package com.example.phanminhduong.reminder.Activity;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
+import com.example.phanminhduong.reminder.R;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -88,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
         if (isLoggedIn) {
-//            startTodayActivity();
+            startTodayActivity();
         } else {
             LoginManager.getInstance().logOut();
         }

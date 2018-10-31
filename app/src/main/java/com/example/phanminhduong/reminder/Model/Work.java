@@ -1,4 +1,4 @@
-package com.example.phanminhduong.reminder;
+package com.example.phanminhduong.reminder.Model;
 
 import java.sql.Date;
 import java.sql.Time;

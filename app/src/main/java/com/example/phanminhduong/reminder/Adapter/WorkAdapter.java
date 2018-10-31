@@ -1,20 +1,14 @@
-package com.example.phanminhduong.reminder;
+package com.example.phanminhduong.reminder.Adapter;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.support.v4.app.ActivityCompat;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import com.example.phanminhduong.reminder.Model.Work;
+import com.example.phanminhduong.reminder.R;
+import com.example.phanminhduong.reminder.Activity.TodayActivity;
 
 import java.util.List;
 
