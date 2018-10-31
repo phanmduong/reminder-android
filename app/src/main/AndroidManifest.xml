@@ -44,14 +44,14 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".TodayActivity">
+        <activity android:name=".Activity.TodayActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AddWorkActivity">
+        <activity android:name=".Activity.AddWorkActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

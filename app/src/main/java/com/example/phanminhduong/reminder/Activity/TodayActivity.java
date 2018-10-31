@@ -16,12 +16,15 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.apollographql.apollo.ApolloCall;
 import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.exception.ApolloException;
+import com.example.phanminhduong.reminder.Data;
+import com.example.phanminhduong.reminder.GetUserQuery;
 import com.example.phanminhduong.reminder.graphql.MyApolloClient;
 import com.squareup.picasso.Picasso;
 
