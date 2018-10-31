@@ -5,8 +5,12 @@
     android:id="@+id/layoutLogin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+<<<<<<< HEAD
+    tools:context=".Activity.MainActivity">
+=======
     android:background="@drawable/background"
     tools:context=".MainActivity">
+>>>>>>> bf237adc1193c2f13a4a2cb1850543c05d068258
 
     <LinearLayout
         android:layout_width="match_parent"

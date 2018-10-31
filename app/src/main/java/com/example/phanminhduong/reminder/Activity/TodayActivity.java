@@ -1,4 +1,4 @@
-package com.example.phanminhduong.reminder;
+package com.example.phanminhduong.reminder.Activity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -28,9 +27,11 @@ import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.example.phanminhduong.reminder.Adapter.WorkAdapter;
+import com.example.phanminhduong.reminder.Model.Work;
+import com.example.phanminhduong.reminder.R;
+
 import java.io.InputStream;
-import java.sql.Date;
-import java.sql.Time;
 import java.util.LinkedList;
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.example.phanminhduong.reminder;
+package com.example.phanminhduong.reminder.Activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -6,14 +6,16 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
+<<<<<<< HEAD:app/src/main/java/com/example/phanminhduong/reminder/Activity/MainActivity.java
+import com.example.phanminhduong.reminder.R;
+=======
 import com.apollographql.apollo.ApolloCall;
 import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.exception.ApolloException;
 import com.example.phanminhduong.reminder.graphql.MyApolloClient;
+>>>>>>> bf237adc1193c2f13a4a2cb1850543c05d068258:app/src/main/java/com/example/phanminhduong/reminder/MainActivity.java
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -137,7 +139,11 @@ public class MainActivity extends AppCompatActivity {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
         if (isLoggedIn) {
+<<<<<<< HEAD:app/src/main/java/com/example/phanminhduong/reminder/Activity/MainActivity.java
+            startTodayActivity();
+=======
             loginFBServer(accessToken.getUserId(), accessToken.getToken());
+>>>>>>> bf237adc1193c2f13a4a2cb1850543c05d068258:app/src/main/java/com/example/phanminhduong/reminder/MainActivity.java
         } else {
             LoginManager.getInstance().logOut();
         }
