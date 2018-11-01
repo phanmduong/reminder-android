@@ -15,15 +15,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.apollographql.apollo.ApolloCall;
 import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.exception.ApolloException;
 import com.example.phanminhduong.reminder.Data;
+import com.example.phanminhduong.reminder.GetGroupsQuery;
 import com.example.phanminhduong.reminder.GetUserQuery;
 import com.example.phanminhduong.reminder.graphql.MyApolloClient;
 import com.squareup.picasso.Picasso;
@@ -48,6 +52,7 @@ public class TodayActivity extends AppCompatActivity {
 
     TextView tvNameUser;
     ImageView imgAvatarUser;
+    NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +88,39 @@ public class TodayActivity extends AppCompatActivity {
         doneWorkListView.setAdapter(workAdapter);
 
         getUserServer();
+        getTodoList();
+    }
+
+    private void getTodoList() {
+        Menu menu = navigationView.getMenu();
+        GetGroupsQuery getGroupsQuery = GetGroupsQuery.builder().token(Data.token).build();
+        MyApolloClient.getApolloClient().query(getGroupsQuery).enqueue(new ApolloCall.Callback<GetGroupsQuery.Data>() {
+            @Override
+            public void onResponse(@NotNull final Response<GetGroupsQuery.Data> response) {
+                final List<GetGroupsQuery.Group> list = response.data().groups();
+                TodayActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (final GetGroupsQuery.Group group : list) {
+                            Menu menu = navigationView.getMenu();
+                            menu.add(group.name()).setIcon(R.drawable.ic_menu_camera).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                                @Override
+                                public boolean onMenuItemClick(MenuItem item) {
+                                    Toast.makeText(TodayActivity.this, group.name(), Toast.LENGTH_LONG).show();
+                                    return true;
+                                }
+                            });
+                        }
+                    }
+                });
+
+            }
+
+            @Override
+            public void onFailure(@NotNull ApolloException e) {
+
+            }
+        });
     }
 
     private void init() {
@@ -96,10 +134,23 @@ public class TodayActivity extends AppCompatActivity {
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         View headerView = navigationView.getHeaderView(0);
         tvNameUser = headerView.findViewById(R.id.nav_header_name_user);
         imgAvatarUser = headerView.findViewById(R.id.nav_header_avatar_user);
+
+        setTodayMenu();
+    }
+
+    private void setTodayMenu() {
+        Menu menu = navigationView.getMenu();
+        menu.add("Today").setIcon(R.drawable.ic_menu_camera).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                Toast.makeText(TodayActivity.this, "Today", Toast.LENGTH_LONG).show();
+                return true;
+            }
+        });
     }
 
     @Override

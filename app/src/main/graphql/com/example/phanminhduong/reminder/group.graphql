@@ -1,0 +1,6 @@
+query getGroups($token: String!){
+  groups(token: $token){
+    id
+    name
+  }
+}
