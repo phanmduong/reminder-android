@@ -141,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
         boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
         if (isLoggedIn) {
             loginFBServer(accessToken.getUserId(), accessToken.getToken());
+
         } else {
             LoginManager.getInstance().logOut();
         }
