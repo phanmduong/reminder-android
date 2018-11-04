@@ -122,4 +122,9 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         timeTxt.setText(time);
 
     }
+
+
+    public void onCancel(View v) {
+        super.onBackPressed();
+    }
 }
