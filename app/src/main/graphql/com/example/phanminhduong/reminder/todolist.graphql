@@ -1,0 +1,23 @@
+mutation todoList(
+$token: String!,
+$name: String!,
+$note: String,
+$deadline: String,
+$group_id: Int
+)
+{
+  todoList(
+  token: $token,
+  name:$name,
+  note:$note,
+  deadline:$deadline,
+  group_id:$group_id,
+)
+  {
+    id
+    name
+    note
+    status
+    deadline
+  }
+}

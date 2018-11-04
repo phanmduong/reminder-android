@@ -1,5 +1,0 @@
-mutation loginUser( $token: String!){
-  addToDoList(token: $token){
-    token
-  }
-}

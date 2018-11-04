@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.example.phanminhduong.reminder.R;
 
@@ -25,10 +26,10 @@ import java.util.Date;
 
 
 public class AddWorkActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
-    EditText noteTxt;
+    EditText noteTxt, titleTxt;
     TextView timeTxt ;
     ImageView imageView;
-    private String time, image;
+    private String time, image, note, title;
     private int year, month, day, hour, minute;
     public static final int PICK_IMAGE = 1;
 
@@ -37,6 +38,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_work);
         noteTxt = findViewById(R.id.note);
+        titleTxt = findViewById(R.id.txtTitle);
         timeTxt = findViewById(R.id.timeTxt);
         imageView = findViewById(R.id.imageView);
     }
@@ -65,10 +67,18 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         }
     }
     public void update(View v){
+        note = noteTxt.getText().toString();
+        title = titleTxt.getText().toString();
+        if(image == null || time ==null || note == null || title == null){
+            Toast.makeText(this, "Bạn chưa hoàn thành thông tin!", Toast.LENGTH_LONG).show();
+            return;
+        }
         Intent i = new Intent();
         i.putExtra("time", time);
-        i.putExtra("note", noteTxt.getText().toString());
+        i.putExtra("note",note);
+        i.putExtra("title",title);
         i.putExtra("image", image);
+
         setResult(198, i);
         finish();
     }

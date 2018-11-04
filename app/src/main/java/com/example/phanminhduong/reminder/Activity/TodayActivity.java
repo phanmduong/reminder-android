@@ -29,7 +29,10 @@ import com.apollographql.apollo.exception.ApolloException;
 import com.example.phanminhduong.reminder.Data;
 import com.example.phanminhduong.reminder.GetGroupsQuery;
 import com.example.phanminhduong.reminder.GetUserQuery;
+import com.example.phanminhduong.reminder.LoginUserMutation;
+import com.example.phanminhduong.reminder.TodoListMutation;
 import com.example.phanminhduong.reminder.graphql.MyApolloClient;
+import com.facebook.login.LoginManager;
 import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
@@ -63,27 +66,21 @@ public class TodayActivity extends AppCompatActivity {
 
         listView = findViewById(R.id.workListView);
         listWork = new LinkedList<>();
-        listWork.add(new Work("Viec 1", "1997-11-12", false));
-        listWork.add(new Work("Viec 2", "1997-11-12", true));
-        listWork.add(new Work("Viec 3", "1997-11-12", false));
-        listWork.add(new Work("Viec 4", "1997-11-12", true));
-        listWork.add(new Work("Viec 1", "1997-11-12", false));
-        listWork.add(new Work("Viec 2", "1997-11-12", true));
-        listWork.add(new Work("Viec 3", "1997-11-12", false));
-        listWork.add(new Work("Viec 4", "1997-11-12", true));
-        listWork.add(new Work("Viec 1", "1997-11-12", false));
-        listWork.add(new Work("Viec 2", "1997-11-12", true));
-        listWork.add(new Work("Viec 3", "1997-11-12", false));
-        listWork.add(new Work("Viec 4", "1997-11-12", true));
+        listWork.add(new Work("Viec 1","note", "1997-11-12", 0));
+        listWork.add(new Work("Viec 2", "note", "1997-11-12", 1));
+        listWork.add(new Work("Viec 3","note",  "1997-11-12", 0));
+        listWork.add(new Work("Viec 4","note",  "1997-11-12", 1));
+        listWork.add(new Work("Viec 1","note",  "1997-11-12", 0));
+        listWork.add(new Work("Viec 2","note",  "1997-11-12", 1));
         workAdapter = new WorkAdapter(this, listWork);
         listView.setAdapter(workAdapter);
 
         doneWorkListView = findViewById(R.id.doneWorkListView);
         listDoneWork = new LinkedList<>();
-        listDoneWork.add(new Work("Viec xong 1", "1997-11-12", false));
-        listDoneWork.add(new Work("Viec xong 2", "1997-11-12", true));
-        listDoneWork.add(new Work("Viec xong 3", "1997-11-12", false));
-        listDoneWork.add(new Work("Viec xong 4", "1997-11-12", true));
+        listDoneWork.add(new Work("Viec xong 1","note",  "1997-11-12", 0));
+        listDoneWork.add(new Work("Viec xong 2", "note", "1997-11-12", 1));
+        listDoneWork.add(new Work("Viec xong 3","note",  "1997-11-12", 0));
+        listDoneWork.add(new Work("Viec xong 4","note", "1997-11-12", 1));
         workAdapter = new WorkAdapter(this, listDoneWork);
         doneWorkListView.setAdapter(workAdapter);
 
@@ -199,9 +196,11 @@ public class TodayActivity extends AppCompatActivity {
             String time = data.getStringExtra("time");
             String image = data.getStringExtra("image");
             String note = data.getStringExtra("note");
-            Log.e("Time: ", time);
-            Log.e("Image: ", image);
-            Log.e("Note: ", note);
+            String name = data.getStringExtra("title");
+//            Log.e("Time: ", time);
+////            Log.e("Image: ", image);
+//            Log.e("Note: ", note);
+
             try {
                 if (bt != null) {
                     bt.recycle();
@@ -216,8 +215,31 @@ public class TodayActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            listWork.add(new Work(note, time, false));
+            listWork.add(new Work(name,note, time, 0));
             doneWorkListView.setAdapter(new WorkAdapter(this, listDoneWork));
+            TodoListMutation tm = TodoListMutation.builder().token(Data.token).name(note).note(note).deadline(time).group_id(0).build();
+            MyApolloClient.getApolloClient().mutate(tm).enqueue(new ApolloCall.Callback<TodoListMutation.Data>() {
+                @Override
+                public void onResponse(@NotNull Response<TodoListMutation.Data> response) {
+                    Object obj = response.data();
+                    Log.e("OBJ", obj.toString());
+
+
+                }
+
+                @Override
+                public void onFailure(@NotNull ApolloException e) {
+                    LoginManager.getInstance().logOut();
+                    TodayActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(TodayActivity.this, "Thất bại!!!", Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+
+                }
+            });
 
         }
         super.onActivityResult(requestCode, resultCode, data);
