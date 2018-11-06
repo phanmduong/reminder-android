@@ -1,5 +1,6 @@
 package com.example.phanminhduong.reminder.Activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,21 +12,27 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.apollographql.apollo.ApolloCall;
 import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.exception.ApolloException;
+import com.example.phanminhduong.reminder.AddGroupMutation;
 import com.example.phanminhduong.reminder.Data;
 import com.example.phanminhduong.reminder.GetGroupsQuery;
 import com.example.phanminhduong.reminder.GetUserQuery;
@@ -41,6 +48,7 @@ import com.example.phanminhduong.reminder.R;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 public class TodayActivity extends AppCompatActivity {
     private ListView listView, doneWorkListView;
@@ -53,6 +61,8 @@ public class TodayActivity extends AppCompatActivity {
     TextView tvNameUser;
     ImageView imgAvatarUser;
     NavigationView navigationView;
+    SubMenu menuGroups;
+    boolean hideMenu = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,11 +98,81 @@ public class TodayActivity extends AppCompatActivity {
         doneWorkListView.setAdapter(workAdapter);
 
         getUserServer();
-        getTodoList();
+        setMenu();
     }
 
-    private void getTodoList() {
-        Menu menu = navigationView.getMenu();
+    private void dialogAddGroup() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Create group");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addGroup(input.getText().toString(), dialog);
+            }
+        });
+    }
+
+    private void addGroup(String name, final DialogInterface dialog) {
+        AddGroupMutation addGroupMutation = AddGroupMutation.builder().name(name).token(Data.token).build();
+        MyApolloClient.getApolloClient().mutate(addGroupMutation).enqueue(new ApolloCall.Callback<AddGroupMutation.Data>() {
+            @Override
+            public void onResponse(@NotNull final Response<AddGroupMutation.Data> response) {
+                TodayActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                        final AddGroupMutation.Group group = response.data().group();
+                        menuGroups.add(group.name()).setIcon(R.drawable.ic_listing).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                groupClick(group.id());
+                                return true;
+                            }
+                        });
+                        ;
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(@NotNull ApolloException e) {
+                Toast.makeText(TodayActivity.this, "Error. Again", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void groupClick(int groupID) {
+        hideMenu = false;
+        invalidateOptionsMenu();
+        Toast.makeText(TodayActivity.this, groupID + "", Toast.LENGTH_LONG).show();
+    }
+
+    private void getGroups() {
+        final Menu menu = navigationView.getMenu();
+        menuGroups = menu.addSubMenu("Groups");
         GetGroupsQuery getGroupsQuery = GetGroupsQuery.builder().token(Data.token).build();
         MyApolloClient.getApolloClient().query(getGroupsQuery).enqueue(new ApolloCall.Callback<GetGroupsQuery.Data>() {
             @Override
@@ -102,18 +182,23 @@ public class TodayActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         for (final GetGroupsQuery.Group group : list) {
-                            Menu menu = navigationView.getMenu();
-                            menu.add(group.name()).setIcon(R.drawable.ic_menu_camera).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            menuGroups.add(group.name()).setIcon(R.drawable.ic_listing).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                                 @Override
                                 public boolean onMenuItemClick(MenuItem item) {
-                                    Toast.makeText(TodayActivity.this, group.name(), Toast.LENGTH_LONG).show();
+                                    groupClick(group.id());
                                     return true;
                                 }
                             });
                         }
+                        menu.add("Add group").setIcon(R.drawable.ic_add).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                dialogAddGroup();
+                                return true;
+                            }
+                        });
                     }
                 });
-
             }
 
             @Override
@@ -121,6 +206,13 @@ public class TodayActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void setMenu() {
+        Menu menu = navigationView.getMenu();
+        menu.clear();
+        setTodayMenu();
+        getGroups();
     }
 
     private void init() {
@@ -139,15 +231,17 @@ public class TodayActivity extends AppCompatActivity {
         tvNameUser = headerView.findViewById(R.id.nav_header_name_user);
         imgAvatarUser = headerView.findViewById(R.id.nav_header_avatar_user);
 
-        setTodayMenu();
+
     }
 
     private void setTodayMenu() {
         Menu menu = navigationView.getMenu();
-        menu.add("Today").setIcon(R.drawable.ic_menu_camera).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.add("Today").setIcon(R.drawable.ic_calendar).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 Toast.makeText(TodayActivity.this, "Today", Toast.LENGTH_LONG).show();
+                hideMenu = true;
+                invalidateOptionsMenu();
                 return true;
             }
         });
@@ -221,5 +315,18 @@ public class TodayActivity extends AppCompatActivity {
 
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_action_toolbar, menu);
+
+        MenuItem deleteItem = menu.findItem(R.id.menu_delete);
+        MenuItem editItem = menu.findItem(R.id.menu_edit);
+
+        deleteItem.setVisible(!hideMenu);
+        editItem.setVisible(!hideMenu);
+
+        return true;
     }
 }
