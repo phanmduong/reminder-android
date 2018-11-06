@@ -76,21 +76,21 @@ public class TodayActivity extends AppCompatActivity {
 
         listView = findViewById(R.id.workListView);
         listWork = new LinkedList<>();
-        listWork.add(new Work("Viec 1","note", "1997-11-12", 0));
+        listWork.add(new Work("Viec 1", "note", "1997-11-12", 0));
         listWork.add(new Work("Viec 2", "note", "1997-11-12", 1));
-        listWork.add(new Work("Viec 3","note",  "1997-11-12", 0));
-        listWork.add(new Work("Viec 4","note",  "1997-11-12", 1));
-        listWork.add(new Work("Viec 1","note",  "1997-11-12", 0));
-        listWork.add(new Work("Viec 2","note",  "1997-11-12", 1));
+        listWork.add(new Work("Viec 3", "note", "1997-11-12", 0));
+        listWork.add(new Work("Viec 4", "note", "1997-11-12", 1));
+        listWork.add(new Work("Viec 1", "note", "1997-11-12", 0));
+        listWork.add(new Work("Viec 2", "note", "1997-11-12", 1));
         workAdapter = new WorkAdapter(this, listWork);
         listView.setAdapter(workAdapter);
 
         doneWorkListView = findViewById(R.id.doneWorkListView);
         listDoneWork = new LinkedList<>();
-        listDoneWork.add(new Work("Viec xong 1","note",  "1997-11-12", 0));
+        listDoneWork.add(new Work("Viec xong 1", "note", "1997-11-12", 0));
         listDoneWork.add(new Work("Viec xong 2", "note", "1997-11-12", 1));
-        listDoneWork.add(new Work("Viec xong 3","note",  "1997-11-12", 0));
-        listDoneWork.add(new Work("Viec xong 4","note", "1997-11-12", 1));
+        listDoneWork.add(new Work("Viec xong 3", "note", "1997-11-12", 0));
+        listDoneWork.add(new Work("Viec xong 4", "note", "1997-11-12", 1));
         workAdapter = new WorkAdapter(this, listDoneWork);
         doneWorkListView.setAdapter(workAdapter);
 
@@ -309,7 +309,7 @@ public class TodayActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            listWork.add(new Work(name,note, time, 0));
+            listWork.add(new Work(name, note, time, 0));
             doneWorkListView.setAdapter(new WorkAdapter(this, listDoneWork));
             TodoListMutation tm = TodoListMutation.builder().token(Data.token).name(note).note(note).deadline(time).group_id(0).build();
             MyApolloClient.getApolloClient().mutate(tm).enqueue(new ApolloCall.Callback<TodoListMutation.Data>() {
@@ -350,5 +350,14 @@ public class TodayActivity extends AppCompatActivity {
         editItem.setVisible(!hideMenu);
 
         return true;
+    }
+
+    public void logout(View view) {
+        LoginManager.getInstance().logOut();
+        Data.token = "";
+        finish();
+        Intent intent = new Intent(TodayActivity.this, MainActivity.class);
+        startActivity(intent);
+
     }
 }

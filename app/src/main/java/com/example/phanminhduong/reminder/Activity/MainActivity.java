@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startTodayActivity() {
         Intent intent = new Intent(this, TodayActivity.class);
-//        finish();
+        finish();
         startActivity(intent);
     }
 
