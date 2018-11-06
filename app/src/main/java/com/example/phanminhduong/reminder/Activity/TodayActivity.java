@@ -42,6 +42,9 @@ import com.example.phanminhduong.reminder.Model.Work;
 import com.example.phanminhduong.reminder.R;
 
 import java.io.InputStream;
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -197,11 +200,9 @@ public class TodayActivity extends AppCompatActivity {
             String image = data.getStringExtra("image");
             String note = data.getStringExtra("note");
             String name = data.getStringExtra("title");
-//            Log.e("Time: ", time);
-////            Log.e("Image: ", image);
-//            Log.e("Note: ", note);
 
             try {
+                //parse image
                 if (bt != null) {
                     bt.recycle();
                 }
@@ -212,27 +213,35 @@ public class TodayActivity extends AppCompatActivity {
 
                 stream.close();
 
+                //format date
+                java.util.Date parse = new SimpleDateFormat("a hh:mm:ss  dd-MM-yyyy").parse(time);
+                String formatted_time = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(parse);
+                Log.e("time",formatted_time);
+                time = formatted_time;
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            listWork.add(new Work(name,note, time, 0));
-            doneWorkListView.setAdapter(new WorkAdapter(this, listDoneWork));
-            TodoListMutation tm = TodoListMutation.builder().token(Data.token).name(note).note(note).deadline(time).group_id(0).build();
+            final Work work = new Work(name, note, time, 0, Data.groupId);
+
+            Log.e("Check",work.toString());
+            TodoListMutation tm = TodoListMutation.builder().token(Data.token).name(name).note(note).deadline(time).group_id(Data.groupId).build();
             MyApolloClient.getApolloClient().mutate(tm).enqueue(new ApolloCall.Callback<TodoListMutation.Data>() {
                 @Override
                 public void onResponse(@NotNull Response<TodoListMutation.Data> response) {
                     Object obj = response.data();
                     Log.e("OBJ", obj.toString());
-
-
+                    Toast.makeText(TodayActivity.this, "Thêm thành công!!!", Toast.LENGTH_LONG).show();
+                    listWork.add(0,work);
                 }
 
                 @Override
                 public void onFailure(@NotNull ApolloException e) {
-                    LoginManager.getInstance().logOut();
+//                    LoginManager.getInstance().logOut();
                     TodayActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
                             Toast.makeText(TodayActivity.this, "Thất bại!!!", Toast.LENGTH_LONG).show();
                         }
                     });
@@ -240,6 +249,10 @@ public class TodayActivity extends AppCompatActivity {
 
                 }
             });
+
+
+            doneWorkListView.setAdapter(new WorkAdapter(this, listDoneWork));
+
 
         }
         super.onActivityResult(requestCode, resultCode, data);

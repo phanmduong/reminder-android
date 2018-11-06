@@ -11,7 +11,7 @@ public class Work {
     public int group_id;
     public int id;
 
-    public Work(String note, String deadline, String name, int status, int group_id, int id) {
+    public Work( String name,String note, String deadline, int status, int group_id, int id) {
         this.note = note;
         this.deadline = deadline;
         this.name = name;
@@ -20,14 +20,14 @@ public class Work {
         this.id = id;
     }
 
-    public Work(String note, String deadline, String name, int status) {
+    public Work(String name, String note, String deadline,  int status) {
         this.note = note;
         this.deadline = deadline;
         this.name = name;
         this.status = status;
     }
 
-    public Work(String note, String deadline, String name, int status, int id) {
+    public Work( String name,String note, String deadline, int status, int id) {
         this.note = note;
         this.deadline = deadline;
         this.name = name;
