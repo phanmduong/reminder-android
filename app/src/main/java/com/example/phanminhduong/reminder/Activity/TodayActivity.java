@@ -90,7 +90,6 @@ public class TodayActivity extends AppCompatActivity {
         getTodoList();
 
 
-
         doneWorkListView = findViewById(R.id.doneWorkListView);
         listDoneWork = new LinkedList<>();
 //        listDoneWork.add(new Work("Viec xong 1", "note", "1997-11-12", 0));
@@ -104,13 +103,28 @@ public class TodayActivity extends AppCompatActivity {
         setMenu();
     }
 
-    public void getTodoList(){
-        GetTodoListQuery gtdlq = GetTodoListQuery.builder().token(Data.token).build();
+    public void getTodoList() {
+        GetTodoListQuery gtdlq = GetTodoListQuery.builder().token(Data.token).groupId(1).build();
         MyApolloClient.getApolloClient().query(gtdlq).enqueue(new ApolloCall.Callback<GetTodoListQuery.Data>() {
             @Override
             public void onResponse(@NotNull Response<GetTodoListQuery.Data> response) {
-                 todoList = response.data().todoLists();
-                 Log.e("TDL","" + todoList.size());
+                todoList = response.data().todoLists();
+                Log.e("TDL", "" + todoList.size());
+
+                listWork = new LinkedList<>();
+                for (GetTodoListQuery.TodoList w:todoList) {
+                    Log.e(w.id() + "", w.name() + " - " + w.note());
+                    Work element = new Work(w.name(),w.note(),w.deadline(),w.status(),w.id());
+                    listWork.add(element);
+                }
+
+                TodayActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        workAdapter = new WorkAdapter(TodayActivity.this, listWork);
+                        listView.setAdapter(workAdapter);
+                    }
+                });
             }
 
             @Override
@@ -126,8 +140,7 @@ public class TodayActivity extends AppCompatActivity {
                 });
             }
         });
-        workAdapter = new WorkAdapter(this, listWork);
-        listView.setAdapter(workAdapter);
+
     }
 
     private void dialogAddGroup() {
@@ -339,30 +352,36 @@ public class TodayActivity extends AppCompatActivity {
                 //format date
                 java.util.Date parse = new SimpleDateFormat("a hh:mm:ss  dd-MM-yyyy").parse(time);
                 String formatted_time = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(parse);
-                Log.e("time",formatted_time);
+                Log.e("time", formatted_time);
                 time = formatted_time;
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            listWork.add(0,new Work(name, note, time, 0, Data.groupId));
+            listWork.add(0, new Work(name, note, time, 0, Data.groupId));
 
-            Log.e("TOKEN",Data.token);
+            Log.e("TOKEN", Data.token);
             TodoListMutation tm = TodoListMutation.builder().token(Data.token).name(name).note(note).deadline(time).group_id(Data.groupId).build();
             MyApolloClient.getApolloClient().mutate(tm).enqueue(new ApolloCall.Callback<TodoListMutation.Data>() {
                 @Override
                 public void onResponse(@NotNull Response<TodoListMutation.Data> response) {
                     Object obj = response.data();
                     Log.e("OBJ", obj.toString());
-                    Toast.makeText(TodayActivity.this, "Thêm thành công!!!", Toast.LENGTH_LONG).show();
+                    TodayActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(TodayActivity.this, "Thêm thành công!!!", Toast.LENGTH_LONG).show();
+
+                        }
+                    });
 
                 }
 
                 @Override
                 public void onFailure(@NotNull final ApolloException e) {
 //                    LoginManager.getInstance().logOut();
-//                    e.printStackTrace();
+                    e.printStackTrace();
 //                    Toast.makeText(TodayActivity.this, "Thất bại!!!", Toast.LENGTH_LONG).show();
                     TodayActivity.this.runOnUiThread(new Runnable() {
                         @Override

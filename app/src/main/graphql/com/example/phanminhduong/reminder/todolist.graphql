@@ -23,8 +23,8 @@ $group_id: Int
 }
 
 
-query getTodoList($token: String!){
-  todoLists(group_id: 1, token: $token){
+query getTodoList($token: String!, $groupId: Int){
+  todoLists(group_id: $groupId, token: $token){
     id
     deadline
     name
@@ -32,4 +32,3 @@ query getTodoList($token: String!){
     status
   }
 }
-
