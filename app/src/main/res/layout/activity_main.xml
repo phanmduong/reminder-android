@@ -5,8 +5,8 @@
     android:id="@+id/layoutLogin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activity.MainActivity"
-    android:background="@drawable/background">
+    android:background="@drawable/background"
+    tools:context=".Activity.MainActivity">
 
 
     <LinearLayout
@@ -24,10 +24,10 @@
             android:gravity="center">
 
             <ImageView
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="190dp"
+                android:layout_height="190dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/logo" />
+                android:src="@drawable/reminder_full" />
         </LinearLayout>
 
         <LinearLayout

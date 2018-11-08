@@ -4,3 +4,10 @@ query getGroups($token: String!){
     name
   }
 }
+
+mutation addGroup($token: String!, $name: String!){
+  group(token: $token, name: $name){
+    id
+    name
+  }
+}

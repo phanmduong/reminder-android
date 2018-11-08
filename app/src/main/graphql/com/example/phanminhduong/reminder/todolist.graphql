@@ -21,3 +21,19 @@ $group_id: Int
     deadline
   }
 }
+
+
+query getTodoList($token: String!){
+  todoLists(group_id: 1, token: $token){
+    id
+    deadline
+    name
+    note
+    status
+  }
+}
+
+
+apollo {
+    customTypeMapping['DateTime'] = "Object"
+}
