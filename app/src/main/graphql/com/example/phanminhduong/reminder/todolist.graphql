@@ -32,8 +32,3 @@ query getTodoList($token: String!){
     status
   }
 }
-
-
-apollo {
-    customTypeMapping['DateTime'] = "Object"
-}
