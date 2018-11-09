@@ -20,15 +20,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.apollographql.apollo.ApolloCall;
 import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.exception.ApolloException;
+import com.example.phanminhduong.reminder.ActionCode;
 import com.example.phanminhduong.reminder.AddGroupMutation;
 import com.example.phanminhduong.reminder.Data;
 import com.example.phanminhduong.reminder.GetGroupsQuery;
@@ -54,11 +57,10 @@ public class TodayActivity extends AppCompatActivity {
     private ListView listView, doneWorkListView;
     List<Work> listWork, listDoneWork;
     WorkAdapter workAdapter;
-    private int ADD_WORK = 198;
-    Bitmap bt;
+    ScrollView scrollView;
     GetUserQuery.User user;
     List<GetTodoListQuery.TodoList> todoList;
-
+    Button btnShowDoneWork;
     TextView tvNameUser;
     ImageView imgAvatarUser;
     NavigationView navigationView;
@@ -73,21 +75,9 @@ public class TodayActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_today);
         init();
-
-
-        listView = findViewById(R.id.workListView);
-
-        listWork = new LinkedList<>();
-        getTodoList();
-
-
-        doneWorkListView = findViewById(R.id.doneWorkListView);
-        listDoneWork = new LinkedList<>();
-        workAdapter = new WorkAdapter(this, listDoneWork);
-        doneWorkListView.setAdapter(workAdapter);
-
         getUserServer();
         setMenu();
+        getTodoList();
     }
 
     public void getTodoList() {
@@ -99,10 +89,16 @@ public class TodayActivity extends AppCompatActivity {
                 Log.e("TDL", "" + todoList.size());
 
                 listWork = new LinkedList<>();
+                listDoneWork = new LinkedList<>();
                 for (GetTodoListQuery.TodoList w : todoList) {
-                    Log.e(w.id() + "", w.name() + " - " + w.note());
+                    Log.e(w.id() + "", w.name() + " - " + w.note() +" - "+ w.status());
                     Work element = new Work(w.name(), w.note(), w.deadline(), w.status(), w.id());
-                    listWork.add(element);
+                    if(element.getStatus() != 0){
+                        listDoneWork.add(element);
+                    }else {
+                        listWork.add(element);
+                    }
+
                 }
 
                 TodayActivity.this.runOnUiThread(new Runnable() {
@@ -110,6 +106,12 @@ public class TodayActivity extends AppCompatActivity {
                     public void run() {
                         workAdapter = new WorkAdapter(TodayActivity.this, listWork);
                         listView.setAdapter(workAdapter);
+
+                        workAdapter = new WorkAdapter(TodayActivity.this, listDoneWork);
+                        doneWorkListView.setAdapter(workAdapter);
+
+
+
                     }
                 });
             }
@@ -268,8 +270,14 @@ public class TodayActivity extends AppCompatActivity {
         View headerView = navigationView.getHeaderView(0);
         tvNameUser = headerView.findViewById(R.id.nav_header_name_user);
         imgAvatarUser = headerView.findViewById(R.id.nav_header_avatar_user);
+        listView = findViewById(R.id.workListView);
+        doneWorkListView = findViewById(R.id.doneWorkListView);
+        scrollView = findViewById(R.id.scrollView);
+        btnShowDoneWork = findViewById(R.id.showDoneWorkButton);
 
+        listWork = new LinkedList<>();
 
+        listDoneWork = new LinkedList<>();
     }
 
     private void setTodayMenu() {
@@ -323,13 +331,13 @@ public class TodayActivity extends AppCompatActivity {
 
     public void addWork(View v) {
         Intent i = new Intent(this, AddWorkActivity.class);
-        startActivityForResult(i, ADD_WORK);
+        startActivityForResult(i, ActionCode.ADD_WORK);
 
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (resultCode == ADD_WORK) {
+        if (resultCode == ActionCode.ADD_WORK) {
 //            String time = data.getStringExtra("time");
 //            String image = data.getStringExtra("image");
 //            String note = data.getStringExtra("note");
@@ -361,5 +369,19 @@ public class TodayActivity extends AppCompatActivity {
         Intent intent = new Intent(TodayActivity.this, MainActivity.class);
         startActivity(intent);
 
+    }
+
+    public void toggleDoneList(View v){
+        int status = doneWorkListView.getVisibility();
+        if(status == View.GONE){
+            doneWorkListView.setVisibility(View.VISIBLE);
+        }else
+        doneWorkListView.setVisibility(View.GONE);
+        scrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                scrollView.smoothScrollTo(0, doneWorkListView.getTop());
+            }
+        });
     }
 }

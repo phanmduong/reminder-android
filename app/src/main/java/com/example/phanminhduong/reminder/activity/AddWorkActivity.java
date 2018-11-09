@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.apollographql.apollo.ApolloCall;
 import com.apollographql.apollo.exception.ApolloException;
+import com.example.phanminhduong.reminder.ActionCode;
 import com.example.phanminhduong.reminder.Data;
 import com.example.phanminhduong.reminder.R;
 import com.example.phanminhduong.reminder.TodoListMutation;
@@ -56,7 +57,6 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
     ImageView imageView;
     private String time, image, note, title;
     private int year, month, day, hour, minute;
-    public static final int PICK_IMAGE = 111;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +70,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == ActionCode.PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             if (data != null) {
                 Bitmap bitmap = null;
                 try {
@@ -181,7 +181,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{pickIntent});
 
-        startActivityForResult(chooserIntent, PICK_IMAGE);
+        startActivityForResult(chooserIntent, ActionCode.PICK_IMAGE);
     }
 
     public String getPath(Uri uri) {

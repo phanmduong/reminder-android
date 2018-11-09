@@ -4,9 +4,9 @@ public class Work {
     private String note;
     private String deadline;
     private String name;
-    public int status;
-    public int group_id;
-    public int id;
+    private int status;
+    private int group_id;
+    private int id;
 
     public Work( String name,String note, String deadline, int status, int group_id, int id) {
         this.note = note;
