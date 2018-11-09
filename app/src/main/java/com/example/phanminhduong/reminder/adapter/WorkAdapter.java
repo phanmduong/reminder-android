@@ -1,4 +1,4 @@
-package com.example.phanminhduong.reminder.Adapter;
+package com.example.phanminhduong.reminder.adapter;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -6,9 +6,9 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.example.phanminhduong.reminder.Model.Work;
+import com.example.phanminhduong.reminder.model.Work;
 import com.example.phanminhduong.reminder.R;
-import com.example.phanminhduong.reminder.Activity.TodayActivity;
+import com.example.phanminhduong.reminder.activity.TodayActivity;
 
 import java.util.List;
 

@@ -1,7 +1,4 @@
-package com.example.phanminhduong.reminder.Model;
-
-import java.sql.Date;
-import java.sql.Time;
+package com.example.phanminhduong.reminder.model;
 
 public class Work {
     private String note;

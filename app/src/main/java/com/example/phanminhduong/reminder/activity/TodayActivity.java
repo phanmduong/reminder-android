@@ -1,4 +1,4 @@
-package com.example.phanminhduong.reminder.Activity;
+package com.example.phanminhduong.reminder.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -6,9 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -25,7 +23,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,7 +34,6 @@ import com.example.phanminhduong.reminder.Data;
 import com.example.phanminhduong.reminder.GetGroupsQuery;
 import com.example.phanminhduong.reminder.GetTodoListQuery;
 import com.example.phanminhduong.reminder.GetUserQuery;
-import com.example.phanminhduong.reminder.LoginUserMutation;
 import com.example.phanminhduong.reminder.TodoListMutation;
 import com.example.phanminhduong.reminder.graphql.MyApolloClient;
 import com.facebook.login.LoginManager;
@@ -45,17 +41,14 @@ import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.example.phanminhduong.reminder.Adapter.WorkAdapter;
-import com.example.phanminhduong.reminder.Model.Work;
+import com.example.phanminhduong.reminder.adapter.WorkAdapter;
+import com.example.phanminhduong.reminder.model.Work;
 import com.example.phanminhduong.reminder.R;
 
 import java.io.InputStream;
-import java.sql.Date;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 public class TodayActivity extends AppCompatActivity {
     private ListView listView, doneWorkListView;
@@ -71,6 +64,9 @@ public class TodayActivity extends AppCompatActivity {
     NavigationView navigationView;
     SubMenu menuGroups;
     boolean hideMenu = true;
+    Toolbar toolbar;
+    DrawerLayout drawer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,9 +108,9 @@ public class TodayActivity extends AppCompatActivity {
                 Log.e("TDL", "" + todoList.size());
 
                 listWork = new LinkedList<>();
-                for (GetTodoListQuery.TodoList w:todoList) {
+                for (GetTodoListQuery.TodoList w : todoList) {
                     Log.e(w.id() + "", w.name() + " - " + w.note());
-                    Work element = new Work(w.name(),w.note(),w.deadline(),w.status(),w.id());
+                    Work element = new Work(w.name(), w.note(), w.deadline(), w.status(), w.id());
                     listWork.add(element);
                 }
 
@@ -141,6 +137,10 @@ public class TodayActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void closeDrawer() {
+        drawer.closeDrawers();
     }
 
     private void dialogAddGroup() {
@@ -190,7 +190,7 @@ public class TodayActivity extends AppCompatActivity {
                         menuGroups.add(group.name()).setIcon(R.drawable.ic_listing).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                             @Override
                             public boolean onMenuItemClick(MenuItem item) {
-                                groupClick(group.id());
+                                groupClick(group.id(), group.name());
                                 return true;
                             }
                         });
@@ -206,15 +206,17 @@ public class TodayActivity extends AppCompatActivity {
         });
     }
 
-    private void groupClick(int groupID) {
+    private void groupClick(int groupID, String name) {
         hideMenu = false;
         invalidateOptionsMenu();
+        getSupportActionBar().setTitle(name);
         Toast.makeText(TodayActivity.this, groupID + "", Toast.LENGTH_LONG).show();
+        closeDrawer();
     }
 
     private void getGroups() {
         final Menu menu = navigationView.getMenu();
-        menuGroups = menu.addSubMenu("Groups");
+        menuGroups = menu.addSubMenu("Nhóm công việc");
         GetGroupsQuery getGroupsQuery = GetGroupsQuery.builder().token(Data.token).build();
         MyApolloClient.getApolloClient().query(getGroupsQuery).enqueue(new ApolloCall.Callback<GetGroupsQuery.Data>() {
             @Override
@@ -227,7 +229,7 @@ public class TodayActivity extends AppCompatActivity {
                             menuGroups.add(group.name()).setIcon(R.drawable.ic_listing).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                                 @Override
                                 public boolean onMenuItemClick(MenuItem item) {
-                                    groupClick(group.id());
+                                    groupClick(group.id(), group.name());
                                     return true;
                                 }
                             });
@@ -258,11 +260,14 @@ public class TodayActivity extends AppCompatActivity {
     }
 
     private void init() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Hôm nay");
 
+        View layoutToday = findViewById(R.id.layoutToday);
+        layoutToday.getBackground().setAlpha(150);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -278,12 +283,14 @@ public class TodayActivity extends AppCompatActivity {
 
     private void setTodayMenu() {
         Menu menu = navigationView.getMenu();
-        menu.add("Today").setIcon(R.drawable.ic_calendar).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.add("Hôm nay").setIcon(R.drawable.ic_calendar).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 Toast.makeText(TodayActivity.this, "Today", Toast.LENGTH_LONG).show();
                 hideMenu = true;
                 invalidateOptionsMenu();
+                getSupportActionBar().setTitle("Hôm nay");
+                drawer.closeDrawer(GravityCompat.START);
                 return true;
             }
         });
