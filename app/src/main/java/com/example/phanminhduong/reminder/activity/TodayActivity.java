@@ -1,9 +1,12 @@
 package com.example.phanminhduong.reminder.activity;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -38,6 +41,7 @@ import com.example.phanminhduong.reminder.GetGroupsQuery;
 import com.example.phanminhduong.reminder.GetTodoListQuery;
 import com.example.phanminhduong.reminder.GetUserQuery;
 import com.example.phanminhduong.reminder.TodoListMutation;
+import com.example.phanminhduong.reminder.adapter.DoneWorkAdapter;
 import com.example.phanminhduong.reminder.graphql.MyApolloClient;
 import com.facebook.login.LoginManager;
 import com.squareup.picasso.Picasso;
@@ -57,6 +61,7 @@ public class TodayActivity extends AppCompatActivity {
     private ListView listView, doneWorkListView;
     List<Work> listWork, listDoneWork;
     WorkAdapter workAdapter;
+    DoneWorkAdapter doneWorkAdapter;
     ScrollView scrollView;
     GetUserQuery.User user;
     List<GetTodoListQuery.TodoList> todoList;
@@ -68,7 +73,7 @@ public class TodayActivity extends AppCompatActivity {
     boolean hideMenu = true;
     Toolbar toolbar;
     DrawerLayout drawer;
-
+    ProgressDialog prgDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,11 +82,14 @@ public class TodayActivity extends AppCompatActivity {
         init();
         getUserServer();
         setMenu();
-        getTodoList();
+        getTodoList(Data.groupId);
     }
 
-    public void getTodoList() {
-        GetTodoListQuery gtdlq = GetTodoListQuery.builder().token(Data.token).groupId(1).build();
+    public void getTodoList(int groupId) {
+        prgDialog.show();
+
+        Data.groupId = groupId;
+        GetTodoListQuery gtdlq = GetTodoListQuery.builder().token(Data.token).groupId(groupId).build();
         MyApolloClient.getApolloClient().query(gtdlq).enqueue(new ApolloCall.Callback<GetTodoListQuery.Data>() {
             @Override
             public void onResponse(@NotNull Response<GetTodoListQuery.Data> response) {
@@ -107,14 +115,19 @@ public class TodayActivity extends AppCompatActivity {
                         workAdapter = new WorkAdapter(TodayActivity.this, listWork);
                         listView.setAdapter(workAdapter);
 
-                        workAdapter = new WorkAdapter(TodayActivity.this, listDoneWork);
-                        doneWorkListView.setAdapter(workAdapter);
-
-
-
+                        doneWorkAdapter = new DoneWorkAdapter(TodayActivity.this, listDoneWork);
+                        doneWorkListView.setAdapter(doneWorkAdapter);
+                        prgDialog.hide();
+                        scrollView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                scrollView.smoothScrollTo(0, scrollView.getTop());
+                            }
+                        });
                     }
                 });
             }
+
 
             @Override
             public void onFailure(@NotNull ApolloException e) {
@@ -122,8 +135,8 @@ public class TodayActivity extends AppCompatActivity {
                 TodayActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
-                        Toast.makeText(TodayActivity.this, "ERR", Toast.LENGTH_LONG).show();
+                        prgDialog.hide();
+                        Toast.makeText(TodayActivity.this, "Có lỗi xảy ra", Toast.LENGTH_LONG).show();
 
                     }
                 });
@@ -203,8 +216,10 @@ public class TodayActivity extends AppCompatActivity {
         hideMenu = false;
         invalidateOptionsMenu();
         getSupportActionBar().setTitle(name);
-        Toast.makeText(TodayActivity.this, groupID + "", Toast.LENGTH_LONG).show();
+//        Toast.makeText(TodayActivity.this, groupID + "", Toast.LENGTH_LONG).show();
+        getTodoList(groupID);
         closeDrawer();
+
     }
 
     private void getGroups() {
@@ -278,6 +293,12 @@ public class TodayActivity extends AppCompatActivity {
         listWork = new LinkedList<>();
 
         listDoneWork = new LinkedList<>();
+
+        prgDialog = new ProgressDialog(this);
+        prgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        prgDialog.setMessage("Đang tải...");
+        prgDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFD4D9D0")));
+        prgDialog.setIndeterminate(false);
     }
 
     private void setTodayMenu() {
@@ -344,7 +365,7 @@ public class TodayActivity extends AppCompatActivity {
 //            String name = data.getStringExtra("title");
 //            listWork.add(0, new Work(name, note, time, 0, Data.groupId));
 //            listView.setAdapter(new WorkAdapter(this, listWork));
-            getTodoList();
+            getTodoList(Data.groupId);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }

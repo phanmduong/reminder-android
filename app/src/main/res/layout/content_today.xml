@@ -79,7 +79,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="32dp"
                 android:layout_marginRight="32dp"
-                android:backgroundTint="@color/colorPrimary"
+                android:backgroundTint="@color/colorPrimaryBlur"
                 android:onClick="toggleDoneList"
                 android:text="Công việc đã hoàn thành"
                 android:textColor="@android:color/white"
