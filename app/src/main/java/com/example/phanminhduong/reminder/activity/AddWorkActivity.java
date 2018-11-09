@@ -24,11 +24,20 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.apollographql.apollo.ApolloCall;
+import com.apollographql.apollo.exception.ApolloException;
+import com.example.phanminhduong.reminder.Data;
 import com.example.phanminhduong.reminder.R;
+import com.example.phanminhduong.reminder.TodoListMutation;
+import com.example.phanminhduong.reminder.graphql.MyApolloClient;
+import com.example.phanminhduong.reminder.model.Work;
 import com.example.phanminhduong.reminder.service.ServiceUpload;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import okhttp3.MediaType;
@@ -47,7 +56,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
     ImageView imageView;
     private String time, image, note, title;
     private int year, month, day, hour, minute;
-    public static final int PICK_IMAGE = 1;
+    public static final int PICK_IMAGE = 111;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,16 +110,63 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
     public void update(View v) {
         note = noteTxt.getText().toString();
         title = titleTxt.getText().toString();
-        if (image == null || time == null || note == null || title == null) {
+        if ( time == null || note == null || title == null) {
             Toast.makeText(this, "Bạn chưa hoàn thành thông tin!", Toast.LENGTH_LONG).show();
             return;
         }
+
+        try {
+
+            //format date
+            java.util.Date parse = new SimpleDateFormat("a hh:mm:ss  dd-MM-yyyy").parse(time);
+            String formatted_time = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(parse);
+            Log.e("time", formatted_time);
+            time = formatted_time;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        
+
+        Log.e("TOKEN", Data.token);
+        TodoListMutation tm = TodoListMutation.builder().token(Data.token).name(title).note(note).deadline(time).group_id(Data.groupId).build();
+        MyApolloClient.getApolloClient().mutate(tm).enqueue(new ApolloCall.Callback<TodoListMutation.Data>() {
+            @Override
+            public void onResponse(@NotNull com.apollographql.apollo.api.Response<TodoListMutation.Data> response) {
+                Object obj = response.data();
+                Log.e("OBJ", obj.toString());
+                AddWorkActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(AddWorkActivity.this, "Thêm thành công!!!", Toast.LENGTH_LONG).show();
+
+                    }
+                });
+
+            }
+
+            @Override
+            public void onFailure(@NotNull final ApolloException e) {
+//                    LoginManager.getInstance().logOut();
+                e.printStackTrace();
+                AddWorkActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        e.printStackTrace();
+                        Toast.makeText(AddWorkActivity.this, "Có lỗi xảy ra!", Toast.LENGTH_LONG).show();
+
+                    }
+                });
+
+            }
+        });
+        
         Intent i = new Intent();
         i.putExtra("time", time);
         i.putExtra("note", note);
         i.putExtra("title", title);
         i.putExtra("image", image);
-
         setResult(198, i);
         finish();
     }

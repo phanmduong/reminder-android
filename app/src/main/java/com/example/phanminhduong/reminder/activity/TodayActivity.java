@@ -76,22 +76,13 @@ public class TodayActivity extends AppCompatActivity {
 
 
         listView = findViewById(R.id.workListView);
+
         listWork = new LinkedList<>();
-//        listWork.add(new Work("Viec 1", "note", "1997-11-12", 0));
-//        listWork.add(new Work("Viec 2", "note", "1997-11-12", 1));
-//        listWork.add(new Work("Viec 3", "note", "1997-11-12", 0));
-//        listWork.add(new Work("Viec 4", "note", "1997-11-12", 1));
-//        listWork.add(new Work("Viec 1", "note", "1997-11-12", 0));
-//        listWork.add(new Work("Viec 2", "note", "1997-11-12", 1));
         getTodoList();
 
 
         doneWorkListView = findViewById(R.id.doneWorkListView);
         listDoneWork = new LinkedList<>();
-//        listDoneWork.add(new Work("Viec xong 1", "note", "1997-11-12", 0));
-//        listDoneWork.add(new Work("Viec xong 2", "note", "1997-11-12", 1));
-//        listDoneWork.add(new Work("Viec xong 3", "note", "1997-11-12", 0));
-//        listDoneWork.add(new Work("Viec xong 4", "note", "1997-11-12", 1));
         workAdapter = new WorkAdapter(this, listDoneWork);
         doneWorkListView.setAdapter(workAdapter);
 
@@ -339,73 +330,13 @@ public class TodayActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == ADD_WORK) {
-            String time = data.getStringExtra("time");
-            String image = data.getStringExtra("image");
-            String note = data.getStringExtra("note");
-            String name = data.getStringExtra("title");
-
-            try {
-                //parse image
-                if (bt != null) {
-                    bt.recycle();
-                }
-
-                InputStream stream = getContentResolver().openInputStream(Uri.parse(image));
-
-                bt = BitmapFactory.decodeStream(stream);
-
-                stream.close();
-
-                //format date
-                java.util.Date parse = new SimpleDateFormat("a hh:mm:ss  dd-MM-yyyy").parse(time);
-                String formatted_time = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(parse);
-                Log.e("time", formatted_time);
-                time = formatted_time;
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            listWork.add(0, new Work(name, note, time, 0, Data.groupId));
-
-            Log.e("TOKEN", Data.token);
-            TodoListMutation tm = TodoListMutation.builder().token(Data.token).name(name).note(note).deadline(time).group_id(Data.groupId).build();
-            MyApolloClient.getApolloClient().mutate(tm).enqueue(new ApolloCall.Callback<TodoListMutation.Data>() {
-                @Override
-                public void onResponse(@NotNull Response<TodoListMutation.Data> response) {
-                    Object obj = response.data();
-                    Log.e("OBJ", obj.toString());
-                    TodayActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(TodayActivity.this, "Thêm thành công!!!", Toast.LENGTH_LONG).show();
-
-                        }
-                    });
-
-                }
-
-                @Override
-                public void onFailure(@NotNull final ApolloException e) {
-//                    LoginManager.getInstance().logOut();
-                    e.printStackTrace();
-//                    Toast.makeText(TodayActivity.this, "Thất bại!!!", Toast.LENGTH_LONG).show();
-                    TodayActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            e.printStackTrace();
-                            Toast.makeText(TodayActivity.this, "Thêm thành công!!!", Toast.LENGTH_LONG).show();
-
-                        }
-                    });
-
-                }
-            });
-
-
-            doneWorkListView.setAdapter(new WorkAdapter(this, listDoneWork));
-
-
+//            String time = data.getStringExtra("time");
+//            String image = data.getStringExtra("image");
+//            String note = data.getStringExtra("note");
+//            String name = data.getStringExtra("title");
+//            listWork.add(0, new Work(name, note, time, 0, Data.groupId));
+//            listView.setAdapter(new WorkAdapter(this, listWork));
+            getTodoList();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
