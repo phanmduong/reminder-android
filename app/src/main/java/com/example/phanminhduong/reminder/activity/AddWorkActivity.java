@@ -43,8 +43,10 @@ import java.util.Date;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -82,7 +84,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
 
 //                    Log.e("filepath", getPath(selectedImage));
 
-                    uploadImage(getRealPathFromURI(selectedImage));
+                    uploadImage(getPath(selectedImage));
 
                     InputStream stream = getContentResolver().openInputStream(data.getData());
 
@@ -207,28 +209,30 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
     }
 
     private void uploadImage(String filePath) {
-
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient client = new OkHttpClient.Builder().addInterceptor(interceptor).build();
 
 // Change base URL to your upload server URL.
-        ServiceUpload service = new Retrofit.Builder().baseUrl("http://colorme.vn").build().create(ServiceUpload.class);
+        ServiceUpload service = new Retrofit.Builder().baseUrl("http://api.colorme.vn").client(client).build().create(ServiceUpload.class);
 
         File file = new File(filePath);
 
         RequestBody reqFile = RequestBody.create(MediaType.parse("image/*"), file);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("upload", file.getName(), reqFile);
-        RequestBody name = RequestBody.create(MediaType.parse("text/plain"), "image");
+        MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), reqFile);
+        RequestBody name = RequestBody.create(MediaType.parse("image/jpeg"), "image");
 
         retrofit2.Call<okhttp3.ResponseBody> req = service.postImage(body, name);
         req.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-
-                Log.e("image", response.body().toString());
+//                JsonObject post = new JsonObject().get(response.body().toString()).getAsJsonObject();
+                Log.e("image", response.body().toString() + "");
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                t.printStackTrace();
+                Log.e("image", t.getMessage());
             }
         });
     }
