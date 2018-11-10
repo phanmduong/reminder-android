@@ -32,3 +32,10 @@ query getTodoList($token: String!, $groupId: Int){
     status
   }
 }
+
+
+mutation changeStatusTodoList($token: String!, $id: Int, $status: Int){
+  changeStatusTodoList(token: $token, id: $id, status: $status){
+    id
+  }
+}

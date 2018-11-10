@@ -36,6 +36,7 @@ import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.exception.ApolloException;
 import com.example.phanminhduong.reminder.ActionCode;
 import com.example.phanminhduong.reminder.AddGroupMutation;
+import com.example.phanminhduong.reminder.ChangeStatusTodoListMutation;
 import com.example.phanminhduong.reminder.Data;
 import com.example.phanminhduong.reminder.GetGroupsQuery;
 import com.example.phanminhduong.reminder.GetTodoListQuery;
@@ -230,6 +231,7 @@ public class TodayActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NotNull final Response<GetGroupsQuery.Data> response) {
                 final List<GetGroupsQuery.Group> list = response.data().groups();
+                if(list != null)
                 TodayActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -404,5 +406,68 @@ public class TodayActivity extends AppCompatActivity {
                 scrollView.smoothScrollTo(0, doneWorkListView.getTop());
             }
         });
+    }
+
+    public void changeStatusWork(final int pos, final boolean checked){
+        Work work = null;
+        int isChecked = checked ? 1 : 0;
+
+        if (checked && pos < listWork.size()){
+            work = listWork.get(pos);
+        }
+        if (!checked && pos < listDoneWork.size()){
+            work = listDoneWork.get(pos);
+        }
+        if(work == null){
+            return;
+        }
+        prgDialog.show();
+        ChangeStatusTodoListMutation csttm = ChangeStatusTodoListMutation.builder().token(Data.token).id(work.getId()).status(isChecked).build();
+        MyApolloClient.getApolloClient().mutate(csttm).enqueue(new ApolloCall.Callback<ChangeStatusTodoListMutation.Data>() {
+            @Override
+            public void onResponse(@NotNull Response<ChangeStatusTodoListMutation.Data> response) {
+                Log.e("mutation", "aukay");
+                TodayActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        moveWork(pos, checked);
+                        prgDialog.hide();
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(@NotNull ApolloException e) {
+                Log.e("mutation", "fail");
+                TodayActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        prgDialog.hide();
+                    }
+                });
+
+            }
+        });
+
+    }
+
+    public void moveWork(int pos, boolean checked){
+        Log.e(pos + "", checked + "");
+        if(checked){
+            Work work = listWork.get(pos);
+            work.setStatus(checked ? 1 : 0);
+            listDoneWork.add(work);
+            listWork.remove(pos);
+        }else {
+            Work work = listDoneWork.get(pos);
+            work.setStatus(checked ? 1 : 0);
+            listWork.add(work);
+            listDoneWork.remove(pos);
+        }
+        workAdapter = new WorkAdapter(TodayActivity.this, listWork);
+        listView.setAdapter(workAdapter);
+        doneWorkAdapter = new DoneWorkAdapter(TodayActivity.this, listDoneWork);
+        doneWorkListView.setAdapter(doneWorkAdapter);
     }
 }

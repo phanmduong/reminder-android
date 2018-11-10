@@ -1,9 +1,11 @@
 package com.example.phanminhduong.reminder.adapter;
 
+import android.graphics.Paint;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.example.phanminhduong.reminder.R;
@@ -47,6 +49,19 @@ public class DoneWorkAdapter extends BaseAdapter {
             m = new MyHolder();
             m.checkBox = v.findViewById(R.id.idCheckBox);
             m.textView = v.findViewById(R.id.idTitle);
+            m.textView.setPaintFlags(m.textView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+
+            m.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(!isChecked) mainActivity.changeStatusWork(position, isChecked);
+                        }
+                    });
+                }
+            });
             v.setTag(m);
 
         } else {

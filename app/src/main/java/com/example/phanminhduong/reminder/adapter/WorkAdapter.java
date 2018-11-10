@@ -4,6 +4,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.example.phanminhduong.reminder.model.Work;
@@ -47,11 +48,23 @@ public class WorkAdapter extends BaseAdapter {
             m = new MyHolder();
             m.checkBox = v.findViewById(R.id.idCheckBox);
             m.textView = v.findViewById(R.id.idTitle);
+            m.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(isChecked) mainActivity.changeStatusWork(position, isChecked);
+                        }
+                    });
+                }
+            });
             v.setTag(m);
 
         } else {
             m = (MyHolder) v.getTag();
         }
+
         final Work p = workList.get(position);
         m.checkBox.setChecked(p.getStatus()!=0);
 
