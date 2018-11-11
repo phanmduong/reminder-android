@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         pd.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFD4D9D0")));
 
         pd.setIndeterminate(false);
+        pd.setCancelable(false);
 
         signInFacebook();
         signInGoogle();

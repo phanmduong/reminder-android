@@ -3,6 +3,7 @@ $token: String!,
 $name: String!,
 $note: String,
 $deadline: String,
+$image: String,
 $group_id: Int
 )
 {
@@ -11,6 +12,7 @@ $group_id: Int
   name:$name,
   note:$note,
   deadline:$deadline,
+  image:$image,
   group_id:$group_id,
 )
   {
@@ -19,6 +21,7 @@ $group_id: Int
     note
     status
     deadline
+    image
   }
 }
 

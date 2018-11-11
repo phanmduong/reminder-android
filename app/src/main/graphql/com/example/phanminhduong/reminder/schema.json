@@ -191,6 +191,18 @@
             "deprecationReason": ""
           },
           {
+            "name": "image",
+            "description": "",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": ""
+          },
+          {
             "name": "name",
             "description": "",
             "args": [],
@@ -364,6 +376,72 @@
             "deprecationReason": ""
           },
           {
+            "name": "deleteGroup",
+            "description": "delete group",
+            "args": [
+              {
+                "name": "token",
+                "description": "",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "id",
+                "description": "",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Group",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": ""
+          },
+          {
+            "name": "deleteTodoList",
+            "description": "delete todo list",
+            "args": [
+              {
+                "name": "token",
+                "description": "",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "id",
+                "description": "",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "TodoList",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": ""
+          },
+          {
             "name": "group",
             "description": "create group",
             "args": [
@@ -386,6 +464,16 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "id",
+                "description": "",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -401,16 +489,6 @@
             "description": "Get user by id",
             "args": [
               {
-                "name": "fb_id",
-                "description": "",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                },
-                "defaultValue": null
-              },
-              {
                 "name": "google_id",
                 "description": "",
                 "type": {
@@ -422,6 +500,16 @@
               },
               {
                 "name": "token",
+                "description": "",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "fb_id",
                 "description": "",
                 "type": {
                   "kind": "SCALAR",
@@ -443,16 +531,6 @@
             "name": "todoList",
             "description": "create todo list",
             "args": [
-              {
-                "name": "group_id",
-                "description": "",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                },
-                "defaultValue": null
-              },
               {
                 "name": "token",
                 "description": "",
@@ -494,7 +572,27 @@
                 "defaultValue": null
               },
               {
+                "name": "image",
+                "description": "",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
                 "name": "id",
+                "description": "",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "group_id",
                 "description": "",
                 "type": {
                   "kind": "SCALAR",

@@ -5,9 +5,15 @@ query getGroups($token: String!){
   }
 }
 
-mutation addGroup($token: String!, $name: String!){
-  group(token: $token, name: $name){
+mutation addGroup($token: String!, $name: String!, $id: Int){
+  group(token: $token, name: $name, id: $id){
     id
     name
+  }
+}
+
+mutation deleteGroup($token: String!, $id: Int!){
+  deleteGroup(token: $token, id: $id){
+    id
   }
 }

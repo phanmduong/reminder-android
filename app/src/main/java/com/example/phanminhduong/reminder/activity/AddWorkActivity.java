@@ -2,11 +2,14 @@ package com.example.phanminhduong.reminder.activity;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Build;
@@ -31,8 +34,10 @@ import com.example.phanminhduong.reminder.Data;
 import com.example.phanminhduong.reminder.R;
 import com.example.phanminhduong.reminder.TodoListMutation;
 import com.example.phanminhduong.reminder.graphql.MyApolloClient;
+import com.example.phanminhduong.reminder.model.Image;
 import com.example.phanminhduong.reminder.model.Work;
 import com.example.phanminhduong.reminder.service.ServiceUpload;
+import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -51,6 +56,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class AddWorkActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
@@ -60,6 +66,8 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
     private String time, image, note, title;
     private int year, month, day, hour, minute;
 
+    ProgressDialog prgDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +76,13 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         titleTxt = findViewById(R.id.txtTitle);
         timeTxt = findViewById(R.id.timeTxt);
         imageView = findViewById(R.id.imageView);
+
+        prgDialog = new ProgressDialog(this);
+        prgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        prgDialog.setMessage("Đang tải...");
+        prgDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFD4D9D0")));
+        prgDialog.setIndeterminate(false);
+        prgDialog.setCancelable(false);
     }
 
     @Override
@@ -82,16 +97,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
 
                     android.net.Uri selectedImage = data.getData();
 
-//                    Log.e("filepath", getPath(selectedImage));
-
                     uploadImage(getPath(selectedImage));
-
-                    InputStream stream = getContentResolver().openInputStream(data.getData());
-
-                    bitmap = BitmapFactory.decodeStream(stream);
-                    image = data.getData().toString();
-                    stream.close();
-                    imageView.setImageBitmap(bitmap);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -99,20 +105,10 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         }
     }
 
-    private String getRealPathFromURI(Uri contentURI) {
-        String[] projection = {MediaStore.Images.Media.DATA};
-        @SuppressWarnings("deprecation")
-        Cursor cursor = managedQuery(contentURI, projection, null, null, null);
-        int column_index = cursor
-                .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        return cursor.getString(column_index);
-    }
-
     public void update(View v) {
         note = noteTxt.getText().toString();
         title = titleTxt.getText().toString();
-        if ( time == null || note == null || title == null) {
+        if (time == null || note == null || title == null) {
             Toast.makeText(this, "Bạn chưa hoàn thành thông tin!", Toast.LENGTH_LONG).show();
             return;
         }
@@ -129,7 +125,6 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
             e.printStackTrace();
         }
 
-        
 
         Log.e("TOKEN", Data.token);
         TodoListMutation tm = TodoListMutation.builder().token(Data.token).name(title).note(note).deadline(time).group_id(Data.groupId).build();
@@ -150,7 +145,6 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
 
             @Override
             public void onFailure(@NotNull final ApolloException e) {
-//                    LoginManager.getInstance().logOut();
                 e.printStackTrace();
                 AddWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
@@ -163,7 +157,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
 
             }
         });
-        
+
         Intent i = new Intent();
         i.putExtra("time", time);
         i.putExtra("note", note);
@@ -201,7 +195,6 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
                     .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
             String path = cursor.getString(column_index);
-            cursor.close();
             return path;
         }
         // this is our fallback here
@@ -214,7 +207,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         OkHttpClient client = new OkHttpClient.Builder().addInterceptor(interceptor).build();
 
 // Change base URL to your upload server URL.
-        ServiceUpload service = new Retrofit.Builder().baseUrl("http://api.colorme.vn").client(client).build().create(ServiceUpload.class);
+        ServiceUpload service = new Retrofit.Builder().baseUrl("http://api.colorme.vn").addConverterFactory(GsonConverterFactory.create()).client(client).build().create(ServiceUpload.class);
 
         File file = new File(filePath);
 
@@ -222,17 +215,31 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), reqFile);
         RequestBody name = RequestBody.create(MediaType.parse("image/jpeg"), "image");
 
-        retrofit2.Call<okhttp3.ResponseBody> req = service.postImage(body, name);
-        req.enqueue(new Callback<ResponseBody>() {
+        prgDialog.show();
+        retrofit2.Call<Image> req = service.postImage(body, name);
+        req.enqueue(new Callback<Image>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                JsonObject post = new JsonObject().get(response.body().toString()).getAsJsonObject();
-                Log.e("image", response.body().toString() + "");
+            public void onResponse(Call<Image> call, Response<Image> response) {
+                image = response.body().getLink();
+                Log.e("image", image);
+                AddWorkActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        prgDialog.dismiss();
+                        Picasso.get().load(image).into(imageView);
+                    }
+                });
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e("image", t.getMessage());
+            public void onFailure(Call<Image> call, Throwable t) {
+                AddWorkActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        prgDialog.dismiss();
+                        Toast.makeText(AddWorkActivity.this, "Tải ảnh thất bại. Thử lại", Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
     }

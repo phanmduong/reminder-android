@@ -38,6 +38,7 @@ import com.example.phanminhduong.reminder.ActionCode;
 import com.example.phanminhduong.reminder.AddGroupMutation;
 import com.example.phanminhduong.reminder.ChangeStatusTodoListMutation;
 import com.example.phanminhduong.reminder.Data;
+import com.example.phanminhduong.reminder.DeleteGroupMutation;
 import com.example.phanminhduong.reminder.GetGroupsQuery;
 import com.example.phanminhduong.reminder.GetTodoListQuery;
 import com.example.phanminhduong.reminder.GetUserQuery;
@@ -100,11 +101,11 @@ public class TodayActivity extends AppCompatActivity {
                 listWork = new LinkedList<>();
                 listDoneWork = new LinkedList<>();
                 for (GetTodoListQuery.TodoList w : todoList) {
-                    Log.e(w.id() + "", w.name() + " - " + w.note() +" - "+ w.status());
+                    Log.e(w.id() + "", w.name() + " - " + w.note() + " - " + w.status());
                     Work element = new Work(w.name(), w.note(), w.deadline(), w.status(), w.id());
-                    if(element.getStatus() != 0){
+                    if (element.getStatus() != 0) {
                         listDoneWork.add(element);
-                    }else {
+                    } else {
                         listWork.add(element);
                     }
 
@@ -150,24 +151,30 @@ public class TodayActivity extends AppCompatActivity {
         drawer.closeDrawers();
     }
 
-    private void dialogAddGroup() {
+    private void dialogStoreGroup(final int groupID, final String groupName) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Create group");
+
 
         // Set up the input
         final EditText input = new EditText(this);
         // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setTitle("Tạo nhóm");
+        if (groupID > 0) {
+            input.setText(groupName);
+            builder.setTitle("Sửa tên nhóm");
+        }
         builder.setView(input);
 
+
         // Set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Lưu", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Thoát", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
@@ -179,7 +186,11 @@ public class TodayActivity extends AppCompatActivity {
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addGroup(input.getText().toString(), dialog);
+                if (groupID > 0) {
+                    editGroup(groupID, input.getText().toString(), dialog);
+                } else {
+                    addGroup(input.getText().toString(), dialog);
+                }
             }
         });
     }
@@ -213,6 +224,29 @@ public class TodayActivity extends AppCompatActivity {
         });
     }
 
+    private void editGroup(int id, String name, final DialogInterface dialog) {
+        AddGroupMutation addGroupMutation = AddGroupMutation.builder().name(name).token(Data.token).id(id).build();
+        MyApolloClient.getApolloClient().mutate(addGroupMutation).enqueue(new ApolloCall.Callback<AddGroupMutation.Data>() {
+            @Override
+            public void onResponse(@NotNull final Response<AddGroupMutation.Data> response) {
+                TodayActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                        final AddGroupMutation.Group group = response.data().group();
+                        menuGroups.findItem(group.id()).setTitle(group.name());
+                        getSupportActionBar().setTitle(group.name());
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(@NotNull ApolloException e) {
+                Toast.makeText(TodayActivity.this, "Error. Again", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void groupClick(int groupID, String name) {
         hideMenu = false;
         invalidateOptionsMenu();
@@ -231,28 +265,29 @@ public class TodayActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NotNull final Response<GetGroupsQuery.Data> response) {
                 final List<GetGroupsQuery.Group> list = response.data().groups();
-                if(list != null)
-                TodayActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (final GetGroupsQuery.Group group : list) {
-                            menuGroups.add(group.name()).setIcon(R.drawable.ic_listing).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                if (list != null)
+                    TodayActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (final GetGroupsQuery.Group group : list) {
+                                menuGroups.add(100, group.id(), group.id(), group.name()).setIcon(R.drawable.ic_listing).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                                    @Override
+                                    public boolean onMenuItemClick(MenuItem item) {
+                                        groupClick(group.id(), group.name());
+                                        return true;
+                                    }
+                                });
+
+                            }
+                            menu.add("Thêm nhóm").setIcon(R.drawable.ic_add).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                                 @Override
                                 public boolean onMenuItemClick(MenuItem item) {
-                                    groupClick(group.id(), group.name());
+                                    dialogStoreGroup(0, "");
                                     return true;
                                 }
                             });
                         }
-                        menu.add("Add group").setIcon(R.drawable.ic_add).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                            @Override
-                            public boolean onMenuItemClick(MenuItem item) {
-                                dialogAddGroup();
-                                return true;
-                            }
-                        });
-                    }
-                });
+                    });
             }
 
             @Override
@@ -266,6 +301,7 @@ public class TodayActivity extends AppCompatActivity {
         Menu menu = navigationView.getMenu();
         menu.clear();
         setTodayMenu();
+        setNoGroup();
         getGroups();
     }
 
@@ -301,6 +337,7 @@ public class TodayActivity extends AppCompatActivity {
         prgDialog.setMessage("Đang tải...");
         prgDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFD4D9D0")));
         prgDialog.setIndeterminate(false);
+        prgDialog.setCancelable(false);
     }
 
     private void setTodayMenu() {
@@ -308,14 +345,33 @@ public class TodayActivity extends AppCompatActivity {
         menu.add("Hôm nay").setIcon(R.drawable.ic_calendar).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Toast.makeText(TodayActivity.this, "Today", Toast.LENGTH_LONG).show();
-                hideMenu = true;
-                invalidateOptionsMenu();
-                getSupportActionBar().setTitle("Hôm nay");
+                todayMenuOnClick();
                 drawer.closeDrawer(GravityCompat.START);
                 return true;
             }
         });
+    }
+
+    private void setNoGroup() {
+        Menu menu = navigationView.getMenu();
+        menu.add("Không nhóm").setIcon(R.drawable.ic_calendar).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                hideMenu = true;
+                invalidateOptionsMenu();
+                getSupportActionBar().setTitle("Không nhóm");
+                getTodoList(0);
+                drawer.closeDrawer(GravityCompat.START);
+                return true;
+            }
+        });
+    }
+
+    private void todayMenuOnClick() {
+        hideMenu = true;
+        invalidateOptionsMenu();
+        getSupportActionBar().setTitle("Hôm nay");
+        getTodoList(-1);
     }
 
     @Override
@@ -394,12 +450,12 @@ public class TodayActivity extends AppCompatActivity {
 
     }
 
-    public void toggleDoneList(View v){
+    public void toggleDoneList(View v) {
         int status = doneWorkListView.getVisibility();
-        if(status == View.GONE){
+        if (status == View.GONE) {
             doneWorkListView.setVisibility(View.VISIBLE);
-        }else
-        doneWorkListView.setVisibility(View.GONE);
+        } else
+            doneWorkListView.setVisibility(View.GONE);
         scrollView.post(new Runnable() {
             @Override
             public void run() {
@@ -408,17 +464,17 @@ public class TodayActivity extends AppCompatActivity {
         });
     }
 
-    public void changeStatusWork(final int pos, final boolean checked){
+    public void changeStatusWork(final int pos, final boolean checked) {
         Work work = null;
         int isChecked = checked ? 1 : 0;
 
-        if (checked && pos < listWork.size()){
+        if (checked && pos < listWork.size()) {
             work = listWork.get(pos);
         }
-        if (!checked && pos < listDoneWork.size()){
+        if (!checked && pos < listDoneWork.size()) {
             work = listDoneWork.get(pos);
         }
-        if(work == null){
+        if (work == null) {
             return;
         }
         prgDialog.show();
@@ -452,14 +508,14 @@ public class TodayActivity extends AppCompatActivity {
 
     }
 
-    public void moveWork(int pos, boolean checked){
+    public void moveWork(int pos, boolean checked) {
         Log.e(pos + "", checked + "");
-        if(checked){
+        if (checked) {
             Work work = listWork.get(pos);
             work.setStatus(checked ? 1 : 0);
             listDoneWork.add(work);
             listWork.remove(pos);
-        }else {
+        } else {
             Work work = listDoneWork.get(pos);
             work.setStatus(checked ? 1 : 0);
             listWork.add(work);
@@ -469,5 +525,67 @@ public class TodayActivity extends AppCompatActivity {
         listView.setAdapter(workAdapter);
         doneWorkAdapter = new DoneWorkAdapter(TodayActivity.this, listDoneWork);
         doneWorkListView.setAdapter(doneWorkAdapter);
+    }
+
+    private void confirmDeleteGroup() {
+        final android.app.AlertDialog.Builder alert = new android.app.AlertDialog.Builder(this);
+        alert.setTitle("Xóa nhóm");
+        alert.setMessage("Bạn có chắc chắn muốn xóa nhóm này không?");
+        alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                deleteGroup(Data.groupId);
+            }
+        });
+        alert.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // close dialog
+                dialog.cancel();
+            }
+        });
+        alert.show();
+    }
+
+    private void deleteGroup(final int groupID) {
+        prgDialog.show();
+        DeleteGroupMutation deleteGroupMutation = DeleteGroupMutation.builder().token(Data.token).id(groupID).build();
+        MyApolloClient.getApolloClient().mutate(deleteGroupMutation).enqueue(new ApolloCall.Callback<DeleteGroupMutation.Data>() {
+            @Override
+            public void onResponse(@NotNull Response<DeleteGroupMutation.Data> response) {
+                TodayActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        prgDialog.dismiss();
+                        menuGroups.removeItem(groupID);
+                        todayMenuOnClick();
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(@NotNull ApolloException e) {
+
+            }
+        });
+    }
+
+    private void editGroup() {
+        MenuItem menuItem = menuGroups.findItem(Data.groupId);
+        menuItem.getTitle();
+        dialogStoreGroup(Data.groupId, menuItem.getTitle().toString());
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_delete:
+                confirmDeleteGroup();
+                return true;
+            case R.id.menu_edit:
+                editGroup();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
     }
 }
