@@ -43,8 +43,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.InputStream;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.SimpleTimeZone;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -60,11 +62,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class AddWorkActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
-    EditText noteTxt, titleTxt;
+    EditText noteTxt, nameTxt;
     TextView timeTxt;
     ImageView imageView;
-    private String time, image, note, title;
-    private int year, month, day, hour, minute;
+    private String time, image, note, name;
+    private int year, month, day, hour, minute, actionCode, id;
 
     ProgressDialog prgDialog;
 
@@ -73,7 +75,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_work);
         noteTxt = findViewById(R.id.note);
-        titleTxt = findViewById(R.id.txtTitle);
+        nameTxt = findViewById(R.id.txtTitle);
         timeTxt = findViewById(R.id.timeTxt);
         imageView = findViewById(R.id.imageView);
 
@@ -83,6 +85,28 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         prgDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFD4D9D0")));
         prgDialog.setIndeterminate(false);
         prgDialog.setCancelable(false);
+        
+        Intent i = getIntent();
+        actionCode =i.getIntExtra("code",0);
+        if(actionCode==ActionCode.EDIT_WORK){
+            id = i.getIntExtra("id", 0);
+            note  = i.getStringExtra("note").trim();
+            name  = i.getStringExtra("name").trim();
+            noteTxt.setText(note);
+            nameTxt.setText(name);
+            String deadline = i.getStringExtra("deadline");
+            if(deadline != null)
+            try {
+                Date parse = new SimpleDateFormat(Data.DB_DATE_FORMAT).parse(deadline);
+                String formatted_time = new SimpleDateFormat(Data.SHOW_DATE_FORMAT).format(parse);
+                time = formatted_time;
+                timeTxt.setText(formatted_time);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            String url = i.getStringExtra("image");
+            if(url != null)Picasso.get().load(url).into(imageView);
+        }
     }
 
     @Override
@@ -107,8 +131,8 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
 
     public void update(View v) {
         note = noteTxt.getText().toString();
-        title = titleTxt.getText().toString();
-        if (time == null || note == null || title == null) {
+        name = nameTxt.getText().toString();
+        if (time == null || note == null || name == null) {
             Toast.makeText(this, "Bạn chưa hoàn thành thông tin!", Toast.LENGTH_LONG).show();
             return;
         }
@@ -117,7 +141,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
 
             //format date
             java.util.Date parse = new SimpleDateFormat("a hh:mm:ss  dd-MM-yyyy").parse(time);
-            String formatted_time = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(parse);
+            String formatted_time = new SimpleDateFormat(Data.DB_DATE_FORMAT).format(parse);
             Log.e("time", formatted_time);
             time = formatted_time;
 
@@ -127,7 +151,12 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
 
 
         Log.e("TOKEN", Data.token);
-        TodoListMutation tm = TodoListMutation.builder().token(Data.token).name(title).note(note).deadline(time).group_id(Data.groupId).build();
+        TodoListMutation tm;
+        if(actionCode==ActionCode.EDIT_WORK){
+
+            tm = TodoListMutation.builder().token(Data.token).id(id).name(name).note(note).deadline(time).image(image).group_id(Data.groupId).build();
+        }else
+        tm = TodoListMutation.builder().token(Data.token).name(name).note(note).deadline(time).image(image).group_id(Data.groupId).build();
         MyApolloClient.getApolloClient().mutate(tm).enqueue(new ApolloCall.Callback<TodoListMutation.Data>() {
             @Override
             public void onResponse(@NotNull com.apollographql.apollo.api.Response<TodoListMutation.Data> response) {
@@ -136,7 +165,8 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
                 AddWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(AddWorkActivity.this, "Thêm thành công!!!", Toast.LENGTH_LONG).show();
+
+                        Toast.makeText(AddWorkActivity.this, "Lưu thành công!!!", Toast.LENGTH_LONG).show();
 
                     }
                 });
@@ -159,11 +189,11 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         });
 
         Intent i = new Intent();
-        i.putExtra("time", time);
-        i.putExtra("note", note);
-        i.putExtra("title", title);
-        i.putExtra("image", image);
-        setResult(198, i);
+//        i.putExtra("time", time);
+//        i.putExtra("note", note);
+//        i.putExtra("name", name);
+//        i.putExtra("image", image);
+        setResult(actionCode, i);
         finish();
     }
 
@@ -278,7 +308,6 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
 
         time = new android.text.format.DateFormat().format("a hh:mm:ss  dd-MM-yyyy", d).toString();
         timeTxt.setText(time);
-
     }
 
 

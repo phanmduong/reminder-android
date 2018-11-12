@@ -19,10 +19,13 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -39,6 +42,7 @@ import com.example.phanminhduong.reminder.AddGroupMutation;
 import com.example.phanminhduong.reminder.ChangeStatusTodoListMutation;
 import com.example.phanminhduong.reminder.Data;
 import com.example.phanminhduong.reminder.DeleteGroupMutation;
+import com.example.phanminhduong.reminder.DeleteTodoListMutation;
 import com.example.phanminhduong.reminder.GetGroupsQuery;
 import com.example.phanminhduong.reminder.GetTodoListQuery;
 import com.example.phanminhduong.reminder.GetUserQuery;
@@ -73,6 +77,7 @@ public class TodayActivity extends AppCompatActivity {
     NavigationView navigationView;
     SubMenu menuGroups;
     boolean hideMenu = true;
+    int order = 0;
     Toolbar toolbar;
     DrawerLayout drawer;
     ProgressDialog prgDialog;
@@ -85,11 +90,14 @@ public class TodayActivity extends AppCompatActivity {
         getUserServer();
         setMenu();
         getTodoList(Data.groupId);
+
     }
 
     public void getTodoList(int groupId) {
-        prgDialog.show();
-
+        Log.e("Status", prgDialog.isShowing() + "");
+        if (!prgDialog.isShowing())
+            prgDialog.show();
+        Log.e("Status", prgDialog.isShowing() + "");
         Data.groupId = groupId;
         GetTodoListQuery gtdlq = GetTodoListQuery.builder().token(Data.token).groupId(groupId).build();
         MyApolloClient.getApolloClient().query(gtdlq).enqueue(new ApolloCall.Callback<GetTodoListQuery.Data>() {
@@ -119,13 +127,19 @@ public class TodayActivity extends AppCompatActivity {
 
                         doneWorkAdapter = new DoneWorkAdapter(TodayActivity.this, listDoneWork);
                         doneWorkListView.setAdapter(doneWorkAdapter);
-                        prgDialog.hide();
+
+                        Log.e("Status", prgDialog.isShowing() + "");
+                        if (prgDialog.isShowing())
+                            prgDialog.dismiss();
+                        Log.e("Status", prgDialog.isShowing() + "");
                         scrollView.post(new Runnable() {
                             @Override
                             public void run() {
                                 scrollView.smoothScrollTo(0, scrollView.getTop());
                             }
                         });
+                        TodayActivity.this.registerForContextMenu(listView);
+                        TodayActivity.this.registerForContextMenu(doneWorkListView);
                     }
                 });
             }
@@ -137,7 +151,7 @@ public class TodayActivity extends AppCompatActivity {
                 TodayActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        prgDialog.hide();
+                        prgDialog.dismiss();
                         Toast.makeText(TodayActivity.this, "Có lỗi xảy ra", Toast.LENGTH_LONG).show();
 
                     }
@@ -338,6 +352,8 @@ public class TodayActivity extends AppCompatActivity {
         prgDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFD4D9D0")));
         prgDialog.setIndeterminate(false);
         prgDialog.setCancelable(false);
+
+
     }
 
     private void setTodayMenu() {
@@ -424,6 +440,8 @@ public class TodayActivity extends AppCompatActivity {
 //            listWork.add(0, new Work(name, note, time, 0, Data.groupId));
 //            listView.setAdapter(new WorkAdapter(this, listWork));
             getTodoList(Data.groupId);
+        } else if (resultCode == ActionCode.EDIT_WORK) {
+            getTodoList(Data.groupId);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -487,7 +505,7 @@ public class TodayActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         moveWork(pos, checked);
-                        prgDialog.hide();
+                        prgDialog.dismiss();
                     }
                 });
             }
@@ -499,7 +517,7 @@ public class TodayActivity extends AppCompatActivity {
                     @Override
                     public void run() {
 
-                        prgDialog.hide();
+                        prgDialog.dismiss();
                     }
                 });
 
@@ -587,5 +605,114 @@ public class TodayActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
 
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        MenuInflater mi = getMenuInflater();
+        if (v.getId() == R.id.workListView) {
+            mi.inflate(R.menu.menu_undone_work, menu);
+        } else if (v.getId() == R.id.doneWorkListView) {
+            mi.inflate(R.menu.menu_done_work, menu);
+        }
+
+
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
+
+
+    public void deleteItem(final int id) {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("Chú ý!")
+                .setMessage("Bạn có chắc muốn xoá công việc này?")
+                .setPositiveButton("Có", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        DeleteTodoListMutation dm = DeleteTodoListMutation.builder().id(id).token(Data.token).build();
+                        MyApolloClient.getApolloClient().mutate(dm).enqueue(new ApolloCall.Callback<DeleteTodoListMutation.Data>() {
+                            @Override
+                            public void onResponse(@NotNull Response<DeleteTodoListMutation.Data> response) {
+                                TodayActivity.this.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(TodayActivity.this, "Xoá thành công!!!", Toast.LENGTH_LONG).show();
+                                        getTodoList(Data.groupId);
+                                    }
+                                });
+
+                            }
+
+                            @Override
+                            public void onFailure(@NotNull ApolloException e) {
+                                TodayActivity.this.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(TodayActivity.this, "Có lỗi xảy ra!", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        });
+
+
+                    }
+
+                })
+                .setNegativeButton("Không", null)
+                .show();
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo menuInfo;//you can select on context item selected
+        menuInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        order = menuInfo.position;
+
+
+        switch (item.getItemId()) {
+            case R.id.menu_undone_edit: {
+
+
+                Work e = listWork.get(order);
+                Intent i = new Intent(this, AddWorkActivity.class);
+                i.putExtra("code", ActionCode.EDIT_WORK);
+                i.putExtra("id", e.getId());
+                i.putExtra("name", e.getName());
+                i.putExtra("note", e.getNote());
+                i.putExtra("image", e.getImage());
+
+                i.putExtra("deadline", e.getDeadline());
+                startActivityForResult(i, ActionCode.EDIT_WORK);
+                break;
+            }
+            case R.id.menu_done_edit: {
+
+
+                Work e = listDoneWork.get(order);
+                Intent i = new Intent(this, AddWorkActivity.class);
+                i.putExtra("code", ActionCode.EDIT_WORK);
+                i.putExtra("id", e.getId());
+                i.putExtra("name", e.getName());
+                i.putExtra("note", e.getNote());
+                i.putExtra("image", e.getImage());
+
+                i.putExtra("deadline", e.getDeadline());
+                startActivityForResult(i, ActionCode.EDIT_WORK);
+                break;
+            }
+            case R.id.menu_undone_delete: {
+                Work e = listWork.get(order);
+                deleteItem(e.getId());
+                break;
+            }
+            case R.id.menu_done_delete: {
+                Work e = listDoneWork.get(order);
+                deleteItem(e.getId());
+                break;
+            }
+
+        }
+        return super.onContextItemSelected(item);
     }
 }

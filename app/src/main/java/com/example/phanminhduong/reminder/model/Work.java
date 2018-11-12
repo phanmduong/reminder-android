@@ -2,11 +2,22 @@ package com.example.phanminhduong.reminder.model;
 
 public class Work {
     private String note;
-    private String deadline;
     private String name;
+    private String deadline;
+    private String image;
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
     private int status;
     private int group_id;
     private int id;
+
 
     public Work( String name,String note, String deadline, int status, int group_id, int id) {
         this.note = note;

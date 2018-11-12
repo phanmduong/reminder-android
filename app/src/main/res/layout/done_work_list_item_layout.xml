@@ -30,6 +30,7 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:buttonTint="@color/colorPrimary"
+            android:focusable="false"
             android:gravity="center" />
     </LinearLayout>
 

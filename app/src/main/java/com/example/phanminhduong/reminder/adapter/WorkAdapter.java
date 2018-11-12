@@ -59,12 +59,13 @@ public class WorkAdapter extends BaseAdapter {
                     });
                 }
             });
+
             v.setTag(m);
+
 
         } else {
             m = (MyHolder) v.getTag();
         }
-
         final Work p = workList.get(position);
         m.checkBox.setChecked(p.getStatus()!=0);
 
