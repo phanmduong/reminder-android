@@ -218,7 +218,7 @@ public class TodayActivity extends AppCompatActivity {
                     public void run() {
                         dialog.dismiss();
                         final AddGroupMutation.Group group = response.data().group();
-                        menuGroups.add(group.name()).setIcon(R.drawable.ic_listing).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        menuGroups.add(100, group.id(), group.id(), group.name()).setIcon(R.drawable.ic_listing).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                             @Override
                             public boolean onMenuItemClick(MenuItem item) {
                                 groupClick(group.id(), group.name());
