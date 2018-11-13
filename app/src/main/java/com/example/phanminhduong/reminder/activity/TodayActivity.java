@@ -94,10 +94,9 @@ public class TodayActivity extends AppCompatActivity {
     }
 
     public void getTodoList(int groupId) {
-        Log.e("Status", prgDialog.isShowing() + "");
-        if (!prgDialog.isShowing())
-            prgDialog.show();
-        Log.e("Status", prgDialog.isShowing() + "");
+        Log.e("Status1", prgDialog.isShowing() + "");
+        prgDialog.show();
+        Log.e("Status2", prgDialog.isShowing() + "");
         Data.groupId = groupId;
         GetTodoListQuery gtdlq = GetTodoListQuery.builder().token(Data.token).groupId(groupId).build();
         MyApolloClient.getApolloClient().query(gtdlq).enqueue(new ApolloCall.Callback<GetTodoListQuery.Data>() {
@@ -128,10 +127,10 @@ public class TodayActivity extends AppCompatActivity {
                         doneWorkAdapter = new DoneWorkAdapter(TodayActivity.this, listDoneWork);
                         doneWorkListView.setAdapter(doneWorkAdapter);
 
-                        Log.e("Status", prgDialog.isShowing() + "");
-                        if (prgDialog.isShowing())
+                        Log.e("Status3", prgDialog.isShowing() + "");
+
                             prgDialog.dismiss();
-                        Log.e("Status", prgDialog.isShowing() + "");
+                        Log.e("Status4", prgDialog.isShowing() + "");
                         scrollView.post(new Runnable() {
                             @Override
                             public void run() {
@@ -284,6 +283,8 @@ public class TodayActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             for (final GetGroupsQuery.Group group : list) {
+                                Log.e("Group", group.id() + group.name());
+
                                 menuGroups.add(100, group.id(), group.id(), group.name()).setIcon(R.drawable.ic_listing).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                                     @Override
                                     public boolean onMenuItemClick(MenuItem item) {
@@ -426,23 +427,19 @@ public class TodayActivity extends AppCompatActivity {
 
     public void addWork(View v) {
         Intent i = new Intent(this, AddWorkActivity.class);
+        i.putExtra("code",ActionCode.ADD_WORK);
         startActivityForResult(i, ActionCode.ADD_WORK);
 
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (resultCode == ActionCode.ADD_WORK) {
-//            String time = data.getStringExtra("time");
-//            String image = data.getStringExtra("image");
-//            String note = data.getStringExtra("note");
-//            String name = data.getStringExtra("title");
-//            listWork.add(0, new Work(name, note, time, 0, Data.groupId));
-//            listView.setAdapter(new WorkAdapter(this, listWork));
-            getTodoList(Data.groupId);
-        } else if (resultCode == ActionCode.EDIT_WORK) {
-            getTodoList(Data.groupId);
-        }
+//        if (resultCode == ActionCode.ADD_WORK) {
+//            getTodoList(Data.groupId);
+//        } else if (resultCode == ActionCode.EDIT_WORK) {
+//            getTodoList(Data.groupId);
+//        }
+        getTodoList(Data.groupId);
         super.onActivityResult(requestCode, resultCode, data);
     }
 

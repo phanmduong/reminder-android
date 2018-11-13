@@ -161,6 +161,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
             @Override
             public void onResponse(@NotNull com.apollographql.apollo.api.Response<TodoListMutation.Data> response) {
                 Object obj = response.data();
+                Log.e("GROUP", Data.groupId + "");
                 Log.e("OBJ", obj.toString());
                 AddWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
@@ -189,10 +190,7 @@ public class AddWorkActivity extends AppCompatActivity implements DatePickerDial
         });
 
         Intent i = new Intent();
-//        i.putExtra("time", time);
-//        i.putExtra("note", note);
-//        i.putExtra("name", name);
-//        i.putExtra("image", image);
+        Log.e("Action", actionCode+ "");
         setResult(actionCode, i);
         finish();
     }
