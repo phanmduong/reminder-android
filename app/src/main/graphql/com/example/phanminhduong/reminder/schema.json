@@ -380,21 +380,21 @@
             "description": "delete group",
             "args": [
               {
-                "name": "token",
-                "description": "",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                },
-                "defaultValue": null
-              },
-              {
                 "name": "id",
                 "description": "",
                 "type": {
                   "kind": "SCALAR",
                   "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "token",
+                "description": "",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
                   "ofType": null
                 },
                 "defaultValue": null
@@ -489,6 +489,16 @@
             "description": "Get user by id",
             "args": [
               {
+                "name": "fb_id",
+                "description": "",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
                 "name": "google_id",
                 "description": "",
                 "type": {
@@ -500,16 +510,6 @@
               },
               {
                 "name": "token",
-                "description": "",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                },
-                "defaultValue": null
-              },
-              {
-                "name": "fb_id",
                 "description": "",
                 "type": {
                   "kind": "SCALAR",
